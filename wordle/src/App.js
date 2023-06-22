@@ -1,5 +1,7 @@
 import './App.css';
 import React, { useState, useEffect } from 'react';
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 function App() {
 
@@ -24,8 +26,9 @@ const Grid = () => {
       for (let col = 0; col < 5; col++) {
         const cellKey = `${row}-${col}`;
         const cellContent = '';
+        const cellColor = 'black'
 
-        initialCells.push({ key: cellKey, content: cellContent });
+        initialCells.push({ key: cellKey, content: cellContent, bgcolor: cellColor});
       }
     }
 
@@ -38,6 +41,7 @@ const Grid = () => {
       <div
         key={cell.key}
         className="grid-cell"
+        style={{backgroundColor:cell.bgcolor}}
       >
         {cell.content}
       </div>
@@ -56,21 +60,66 @@ const Qwerty =  ({setGridCells}) => {
   const [guess,setGuess] = useState([])
   const [score,setScore] = useState(0)
   const [answer, setAnswer] = useState('')
-  const [result, setResult] = useState([])
+  const [words, setWords] = useState([])
+  const [popupOpen, setPopupOpen] = useState(false)
+  const [gameState, setGameState] = useState(false)
   useEffect(() => {
     fetch('/answer')
       .then(response => response.json())
       .then(data => {
         setAnswer(data['ans']);
+        // console.log(data['ans']);
       })
       .catch(error => {
         console.error(error);
       });
+
+      fetch('/words')
+      .then(response => response.json())
+      .then(data => {
+        setWords(data['words']);
+        // console.log(data['ans']);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
   }, []);
+
+  const processResult = (result) => {
+
+    let count = 0
+
+    for (let i = 0; i < result.length; i++) {
+      if (result[i] === 0) {
+        updateGridColor('gray',`${score}-${i}`)
+      }
+      if (result[i] === 1) {
+        updateGridColor('darkgoldenrod',`${score}-${i}`)
+      }
+      if (result[i] === 2) {
+        updateGridColor('green',`${score}-${i}`)
+        count += 1
+      }
+    }
+
+    if (score === 5){
+      setPopupOpen(true)
+    }
+
+    if (count === 5) {
+      setPopupOpen(true)
+      setGameState(true)
+    }
+
+
+  }
+
+
 
   const sendData = () => {
     const data = {
-      'value': guess.toString(),
+      'value': guess.join(''),
       'answer': answer,
     };
 
@@ -83,7 +132,8 @@ const Qwerty =  ({setGridCells}) => {
     })
       .then(response => response.json())
       .then(responseData => {
-        setResult(responseData['result'])
+        processResult(responseData['result'])
+        // console.log(answer)
       })
       .catch(error => {
         console.error(error);
@@ -91,19 +141,27 @@ const Qwerty =  ({setGridCells}) => {
   };
   const click = (e) => {
     // console.log(e.target.value)
-    if (guess.length > 0 && e.target.value === 'del'){
+    if (guess.length === 5 &&(words.includes(guess.join('')) === false)){
+      window.alert('Not a valid Word')
+      for (let i = 0; i < guess.length; i++) {
+        updateGrid('',`${score}-${i}`)
+      }
+      setGuess([])
+    }
+    else if (guess.length > 0 && e.target.value === 'del'){
       guess.pop()
       setGuess(guess)
       updateGrid('',`${score}-${guess.length}`)
     }
     
     else if (guess.length === 5 && e.target.value === 'enter'){
-      setScore(score+1)
       sendData()
+      setGuess([])
+      setScore(score+1)
     }
 
     else if(guess.length < 5 && e.target.value !== 'del' && e.target.value !== 'enter'){
-      console.log(guess,guess.length)
+      // console.log(guess,guess.length)
       updateGrid(e.target.value.toUpperCase(),`${score}-${guess.length}`)
       guess.push(e.target.value)
       setGuess(guess)
@@ -119,7 +177,19 @@ const Qwerty =  ({setGridCells}) => {
       )
     );
   };
-  return (<div>
+
+  const updateGridColor = (value,cellKey) => {
+    setGridCells((prevCells) =>
+      prevCells.map((cell) =>
+        cell.key === cellKey ? { ...cell, bgcolor: value } : cell
+      )
+    );
+  };
+
+  const refresh = () => {
+    window.location.reload(false);
+  }
+  return (<div><div>
     <div className="keyboard-row">
             <button value="q" onClick={ e => click(e) }>q</button>
             <button value="w" onClick={ e => click(e) }>w</button>
@@ -156,6 +226,31 @@ const Qwerty =  ({setGridCells}) => {
             <button value="m" onClick={ e => click(e) }>m</button>
             <button value="del" className="wide-button" onClick={ e => click(e) }>Del</button>
           </div>
+        </div>
+        <div>
+          <Popup open={popupOpen} modal closeOnDocumentClick={false}>
+
+          {
+          close => (
+              <div className='modal'>
+                { gameState &&
+                  <h4 className='content'>
+                      Score : {score}
+                  </h4> }
+                  <h4 className='content'>
+                      The answer is : {answer.toUpperCase()}
+                  </h4>
+                  <div>
+                      <button className='custbtn' onClick=
+                          {() => refresh()}>
+                              Play Again
+                      </button>
+                  </div>
+              </div>
+          )
+          }
+          </Popup>
+        </div>
         </div>
   );
 }

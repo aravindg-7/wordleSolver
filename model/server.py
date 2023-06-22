@@ -8,12 +8,18 @@ app = Flask(__name__)
 
 @app.route('/answer', methods=['GET'])
 def get_words():
-    data = pd.read_csv('possible_words.txt')
+    data = pd.read_csv('new_possible_words.txt')
     game_words = list(data['Possible_words'])
     answer = random.choices(game_words, k=1)[0]
     response = {'ans':answer}
     return jsonify(response)
 
+@app.route('/words', methods=['GET'])
+def allowed_words():
+    data = pd.read_csv('Allowed_words.txt')
+    game_words = list(data['Allowed'])
+    response = {'words':game_words}
+    return jsonify(response)
 
 
 
@@ -35,6 +41,7 @@ def wordle_output():
             count[value[i]] -= 1
             res[i] = 1
     response = {'result':res}
+    print(value,answer,res)
     return jsonify(response)
 
 
