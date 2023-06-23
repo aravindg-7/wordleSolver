@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/aravindg-7/wordlegame/static/css/main.b04dacf8.css",
+    "main.js": "/aravindg-7/wordlegame/static/js/main.ffeddc42.js",
+    "static/js/787.e01666d6.chunk.js": "/aravindg-7/wordlegame/static/js/787.e01666d6.chunk.js",
+    "index.html": "/aravindg-7/wordlegame/index.html",
+    "main.b04dacf8.css.map": "/aravindg-7/wordlegame/static/css/main.b04dacf8.css.map",
+    "main.ffeddc42.js.map": "/aravindg-7/wordlegame/static/js/main.ffeddc42.js.map",
+    "787.e01666d6.chunk.js.map": "/aravindg-7/wordlegame/static/js/787.e01666d6.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b04dacf8.css",
+    "static/js/main.ffeddc42.js"
+  ]
+}
